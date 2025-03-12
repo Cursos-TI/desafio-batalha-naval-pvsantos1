@@ -21,6 +21,7 @@
     #define LINHAS 10
     #define COLUNAS 10
     #define NAVIO 3
+    #define HABILIDADE 5
 
     void inicializarTabuleiro(int tabuleiro[LINHAS][COLUNAS]) {
         for (int i = 0; i < LINHAS; i++) {
@@ -34,8 +35,8 @@
         for (int i = 0; i < NAVIO; i++) {
             int r = linha, c = coluna;
             switch (orientacao) {
-                case 'H': r = linha; c = coluna + i; break;
-                case 'V': r = linha + i; c = coluna; break;
+                case 'H': c = coluna + i; break;
+                case 'V': r = linha + i; break;
                 case 'D': r = linha + i; c = coluna + i; break;
                 case 'E': r = linha + i; c = coluna - i; break;
             }
@@ -50,8 +51,8 @@
             for (int i = 0; i < NAVIO; i++) {
                 int r = linha, c = coluna;
                 switch (orientacao) {
-                    case 'H': r = linha; c = coluna + i; break;
-                    case 'V': r = linha + i; c = coluna; break;
+                    case 'H': c = coluna + i; break;
+                    case 'V': r = linha + i; break;
                     case 'D': r = linha + i; c = coluna + i; break;
                     case 'E': r = linha + i; c = coluna - i; break;
                 }
@@ -59,6 +60,43 @@
             }
         } else {
             printf("Não foi possível posicionar navio em (%d, %d) na direção '%c'\n", linha, coluna, orientacao);
+        }
+    }
+    
+    void aplicarHabilidade(int tabuleiro[LINHAS][COLUNAS], int linha, int coluna, char tipo) {
+        int area[5][5] = {0};
+        
+        if (tipo == 'C') {
+            for (int i = 0; i < 5; i++) {
+                area[2][i] = 1;
+                area[i][2] = 1;
+            }
+        } else if (tipo == 'O') {
+            for (int i = 0; i < 5; i++) {
+                for (int j = 0; j < 5; j++) {
+                    if (abs(i - 2) + abs(j - 2) <= 2) {
+                        area[i][j] = 1;
+                    }
+                }
+            }
+        } else if (tipo == 'N') {
+            for (int i = 0; i < 3; i++) {
+                for (int j = 2 - i; j <= 2 + i; j++) {
+                    area[i][j] = 1;
+                }
+            }
+        }
+        
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                int r = linha + i - 2;
+                int c = coluna + j - 2;
+                if (r >= 0 && r < LINHAS && c >= 0 && c < COLUNAS) {
+                    if (area[i][j] == 1) {
+                        tabuleiro[r][c] = HABILIDADE;
+                    }
+                }
+            }
         }
     }
     
@@ -82,13 +120,16 @@
         int tabuleiro[LINHAS][COLUNAS];
         inicializarTabuleiro(tabuleiro);
     
-        // Dois navios horizontais/verticais
+        // Posicionamento de navios
         posicionarNavio(tabuleiro, 1, 1, 'H'); // Horizontal
         posicionarNavio(tabuleiro, 4, 4, 'V'); // Vertical
-    
-        // Dois navios diagonais
         posicionarNavio(tabuleiro, 7, 0, 'D'); // Diagonal ↘
         posicionarNavio(tabuleiro, 0, 9, 'E'); // Diagonal ↙
+        
+        // Aplicação de habilidades
+        aplicarHabilidade(tabuleiro, 3, 3, 'C'); // Cruz
+        aplicarHabilidade(tabuleiro, 6, 6, 'O'); // Octaedro
+        aplicarHabilidade(tabuleiro, 2, 7, 'N'); // Cone
     
         exibirTabuleiro(tabuleiro);
     
